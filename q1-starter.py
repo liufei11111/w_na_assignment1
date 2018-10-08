@@ -7,7 +7,7 @@
 
 import snap
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import random
 # Setup
 erdosRenyi = None
@@ -28,20 +28,17 @@ def genErdosRenyi(N=5242, E=14484):
     # TODO: Your code here!
     if N <= 0:
         raise Exception('Cannot be lower than 0')
-    total_number_possible_edges = N*(N-1)/2
-    p = E/total_number_possible_edges
     Graph = snap.PUNGraph.New()
     for i in range(N):
         Graph.AddNode(i)
     count_sampled = 0
     sampled_set = set()
-    while len(count_sampled) < total_number_possible_edges:
-        for i in xrange(N):
-            for j in xrange(i):
-                if (i,j) not in sampled_set and random.random() < p:
-                    sampled_set.add((i,j))
-                    count_sampled = count_sampled + 1
-                    p = (E-count_sampled)/(total_number_possible_edges-count_sampled)
+    while count_sampled < E:
+        i = random.randint(0, N-1)
+        j = random.randint(0, N-1)
+        if (i,j) not in sampled_set and i != j:
+            sampled_set.add((i,j))
+            count_sampled = count_sampled + 1
     for (i,j) in sampled_set:
         Graph.AddEdge(i, j)
     ############################################################################
@@ -61,8 +58,6 @@ def genCircle(N=5242):
     Graph = snap.PUNGraph.New()
     for i in range(N):
         Graph.AddNode(i)
-
-
     ############################################################################
     return Graph
 
@@ -81,7 +76,6 @@ def connectNbrOfNbr(Graph, N=5242):
     for i in range(N-1):
         Graph.AddEdge(i, i+1)
     Graph.AddEdge(N-1, 0)
-
     ############################################################################
     return Graph
 
@@ -191,7 +185,7 @@ def Q1_1():
     collabNet = loadCollabNet("ca-GrQc.txt")
 
     x_erdosRenyi, y_erdosRenyi = getDataPointsToPlot(erdosRenyi)
-    # plt.loglog(x_erdosRenyi, y_erdosRenyi, color = 'y', label = 'Erdos Renyi Network')
+    plt.loglog(x_erdosRenyi, y_erdosRenyi, color = 'y', label = 'Erdos Renyi Network')
 
     # x_smallWorld, y_smallWorld = getDataPointsToPlot(smallWorld)
     # plt.loglog(x_smallWorld, y_smallWorld, linestyle = 'dashed', color = 'r', label = 'Small World Network')
@@ -223,8 +217,24 @@ def calcClusteringCoefficientSingleNode(Node, Graph):
     """
     ############################################################################
     # TODO: Your code here!
+    if Node.GetOutDeg() < 2:
+        return 0
     C = 0.0
-
+    neighbors = {}
+    count = 0
+    edge_count = 0
+    for index_id in xrange(Node.GetOutDeg()):
+        if Node.GetOutNId(index_id) != Node.GetId():
+            neighbors[count] = Node.GetOutNId(index_id)
+            count = count + 1
+    for inner_index, curr_node_id in neighbors.items():
+        curr_node = Graph.GetNI(curr_node_id)
+        for neighbor_index in xrange(inner_index+1, count):
+            neighbor_node_id = neighbors[neighbor_index]
+            if curr_node.IsNbrNId(neighbor_node_id):
+                edge_count = edge_count + 1
+    degree = Node.GetOutDeg()
+    C = 2.0*edge_count/ (degree*(degree-1))
     ############################################################################
     return C
 
@@ -239,7 +249,11 @@ def calcClusteringCoefficient(Graph):
     # TODO: Your code here! If you filled out calcClusteringCoefficientSingleNode,
     #       you'll probably want to call it in a loop here
     C = 0.0
-
+    count = 0
+    for node in Graph.Nodes():
+        C += calcClusteringCoefficientSingleNode(node, Graph)
+        count = count + 1
+    C = C/count
     ############################################################################
     return C
 
@@ -257,4 +271,4 @@ def Q1_2():
 
 
 # Execute code for Q1.2
-# Q1_2()
+Q1_2()
