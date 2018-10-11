@@ -42,8 +42,9 @@ def q2_1():
     print('inward_set', len(inward_set))
     print('outward_set', len(outward_set))
     print('G size', G.GetEdges())
-    scc = outward_set.intersection(inward_set)
-    print len(scc)
+    MxScc = snap.GetMxScc(G)
+    mxSccSize = MxScc.GetNodes()
+    print 'SCC size:', mxSccSize
     print 'Relative size of SCC in Directed Graph:', snap.GetMxSccSz(G)
     
     
@@ -68,8 +69,6 @@ def q2_1():
     print('inward_set', len(inward_set))
     print('outward_set', len(outward_set))
     print('G size', G.GetEdges())
-    scc = outward_set.intersection(inward_set)
-    print len(scc)
     print 'Relative size of SCC in Directed Graph:', snap.GetMxSccSz(G)
     
     
